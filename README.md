@@ -1,4 +1,4 @@
-main2.pyはlangchainのリポジトリの内容を質問できるchatbot
-graph_rag_ENG.pyは英語のpdfファイルを読み込んで質問できるgraphragを盛り込んだchatbot
-graph_rag_JP.pyは日本語の縦書きのpdfファイルに対応している
-graphragのデータベースはNeo4j auraを使っている
+main2.pyはlangchainのリポジトリの内容を質問できるchatbot。
+graph_rag_ENG.pyは英語のpdfファイルを読み込んで質問できるgraphragを盛り込んだchatbot。
+graph_rag_JP.pyは日本語の縦書きのpdfファイルに対応している。
+graphragのデータベースはNeo4j auraを使っている。
