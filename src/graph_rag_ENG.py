@@ -16,7 +16,7 @@ NEO4J_USERNAME = os.environ.get('NEO4J_USERNAME', 'neo4j')
 NEO4J_PASSWORD = os.environ.get('NEO4J_PASSWORD')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
-# Initialize Neo4j graph
+# Neo4j graph初期化
 graph = Neo4jGraph(
     url=NEO4J_URI,
     username=NEO4J_USERNAME,
@@ -27,14 +27,14 @@ text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=500,
     chunk_overlap=100,
     length_function=len,
-    separators=[". ", ", ", "\n", " "]  # Changed for English text
+    separators=[". ", ", ", "\n", " "] 
 )
 
 @cl.on_chat_start
 async def on_chat_start():
     files = None
 
-    # Wait for file upload from user
+    # ユーザーからのファイルのアップロードを待つ
     while files is None:
         files = await cl.AskFileMessage(
             content="Please upload a PDF file",
@@ -48,16 +48,16 @@ async def on_chat_start():
     await msg.send()
 
     try:
-        # Extract text from PDF
+        # PDFから取得
         documents = extract_text_from_pdf(file.path)
         
         if not documents:
             raise ValueError("Could not extract text from PDF")
 
-        # Split text into chunks
+        # テキストのチャンク化
         split_documents = text_splitter.split_documents(documents)
         
-        # Create knowledge graph
+        # knowledge graphの作成
         create_knowledge_graph(split_documents)
         
         msg.content = f"Finished processing `{file.name}`. Ask me anything!"
@@ -156,20 +156,20 @@ def extract_keywords(text: str) -> List[str]:
 @cl.on_message
 async def main(message: cl.Message):
     try:
-        # Search for relevant documents
+        # 関連するドキュメントの取得
         relevant_docs = search_documents(message.content)
         if not relevant_docs:
             await cl.Message(content="No relevant information found.").send()
             return
 
-        # Create reference elements
+        # 参照要素を作成
         text_elements = []
         for doc in relevant_docs:
             page_num = doc.metadata["page"]
             relevance = doc.metadata["relevance"]
             context = doc.metadata["context"]
             
-            # Create reference text including previous and next page info
+            # 前後のページ情報を含む参照テキストを作成
             context_info = []
             if context["prev_page"]:
                 context_info.append(f"Previous page: {context['prev_page']}")
@@ -191,7 +191,7 @@ async def main(message: cl.Message):
                 )
             )
 
-        # Create prompt
+        # プロンプト生成
         context = "\n\n".join([doc.page_content for doc in relevant_docs])
         prompt = f"""
         Please answer the question based on the following context:
@@ -201,7 +201,7 @@ async def main(message: cl.Message):
         Question: {message.content}
         """
 
-        # Generate response
+        # レスポンスの生成
         client = OpenAI(api_key=OPENAI_API_KEY)
         response = client.chat.completions.create(
             model="gpt-4",
@@ -214,7 +214,7 @@ async def main(message: cl.Message):
         
         answer = response.choices[0].message.content
         
-        # Add source information
+        # 参照元の提示
         source_info = [f"p.{doc.metadata['page']}(relevance:{doc.metadata['relevance']})" 
                       for doc in relevant_docs]
         answer += f"\n\nSources: {', '.join(source_info)}"
